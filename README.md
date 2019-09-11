@@ -58,19 +58,19 @@ class TestSqlStorage(StorageTests, BaseTestCase):
     r2.revoke()
     self.assertEqual(self.result_count(), 2)
     
-    self.assertTrue()
-    self.assertEqual()
-    self.assertEqual()
+    self.assertTrue(self.execute_next() is None)
+    self.assertEqual(len(self.huey), 0)
+    self.assertEqual(self.huey.result_count(), 1)
     
-    r3 = task_a.schedule()
-    self.assertEqual()
-    self.assertTrue()
-    self.asserEqual()
-    self.assertEqual()
-    self.assertEqual()
+    r3 = task_a.schedule((3,), delay=10)
+    self.assertEqual(len(self.huey), 1)
+    self.assertTrue(self.execute_next() is None)
+    self.asserEqual(self.huey.scheduled_count(), 1)
+    self.assertEqual(len(self.huey), 0)
+    self.assertEqual(self.huey.result_count(), 1)
     
-    tasks = self.huey.read_schedule()
-    self.assertEqual()
+    tasks = self.huey.read_schedule(r3.task.eta)
+    self.assertEqual(len(tasks), 1)
     self.assertEqual(tasks[0].id, r3.id)
     
   def test_sql_huey_priority(self):
@@ -82,18 +82,18 @@ class TestSqlStorage(StorageTests, BaseTestCase):
     def task_b(n):
       return n * 10
       
-    task_a()
-    task_b()
-    task_a()
-    task_b()
-    task_a()
-    task_b()
-    task_a()
-    task_b()
+    task_a(1)
+    task_b(2)
+    task_a(3, priority=2)
+    task_b(4, priority=2)
+    task_a(5, priority=1)
+    task_b(6, priority=0)
+    task_a(7)
+    task_b(8)
     
     results = [3, 40, 20, 5, 80, 1, 60, 7]
     for result in results:
-      self.assertEqual(self.execute_next(), result)
+      self.assertEqual(self.execute_next(self.excute_next()), result)
       
     self.assertEqual(len(self.huey), 0)
 ```
